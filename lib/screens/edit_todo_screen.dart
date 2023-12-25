@@ -119,55 +119,62 @@ class _EditTodoScreenState extends State<EditTodoScreen> {
           SizedBox(
               width: 200,
               child:
-          BlocListener<EditTodoBloc, EditTodoState>(
-              listener: (context, state) {
-                // do stuff here based on BlocA's state
-                if(state.status.isLoading) {
-                  const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-                else if(state.status.isError){
-                  TodoListErrorWidget(message: state.message);
+                  BlocListener<EditTodoBloc, EditTodoState>(
+                        listener: (context, state) {
+                          if(state.status.isError){
+                              String errMessage = state.message!;
+                              if (kDebugMode) {
+                              print("Updating todo Failed: $errMessage");
+                              }
+                              Navigator.of(context).pop();
+                          }
+                          else if(state.status.isSuccess){
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(const SnackBar(
+                              content: Text("Updated successfully.", style: TextStyle(fontSize: 18,
+                                color: Colors.white,),),
+                            ));
+                            Navigator.pop(context, true);//true for isCompleteUpdated bool argument to list screen
+                          }
 
-                }
-                else if(state.status.isSuccess){
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(const SnackBar(
-                    content: Text("Updated successfully.", style: TextStyle(fontSize: 18,
-                      color: Colors.white,),),
-                  ));
-                  Navigator.pop(context, true);//true for isCompleteUpdated bool argument to list screen
-                }
+                        },
+                        child:
+                            BlocBuilder<EditTodoBloc, EditTodoState>(
+                            builder: (context, state){
+                            return
+                                    state.status.isLoading?
+                                    const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(),))
 
-              },
-              child: ElevatedButton(
-                  onPressed: () async {
-                    if (kDebugMode) {
-                      print("argument todo: ${todo.toJson()}");
-                    }
-                    if (formKey.currentState!.validate()) {
-                      context.read<EditTodoBloc>().add(UpdateButtonClickEvent(todoId: todo.todoId!, completed: todo.isComplete!));
-                    }else{
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(const SnackBar(
-                        content: Text("Update todo successfully.", style: TextStyle(fontSize: 18,
-                          color: Colors.white,),),
-                      ));
+                                        :
 
-                    }
+                                    ElevatedButton(
+                                          onPressed: () async {
+                                                    if (kDebugMode) {
+                                                      print("argument todo: ${todo.toJson()}");
+                                                    }
+                                                    if (formKey.currentState!.validate()) {
+                                                      context.read<EditTodoBloc>().add(UpdateButtonClickEvent(todoId: todo.todoId!, completed: todo.isComplete!));
+                                                    }else{
+                                                      ScaffoldMessenger.of(context)
+                                                          .showSnackBar(const SnackBar(
+                                                        content: Text("Update todo successfully.", style: TextStyle(fontSize: 18,
+                                                          color: Colors.white,),),
+                                                      ));
+
+                                                    }
 
 
-                  },
-                  child: const Text(
-                    "Update",
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.black87,
-                    ),
-                  )
-              ),
-              )
+                                                  },
+                                                  child: const Text(
+                                                    "Update",
+                                                    style: TextStyle(
+                                                      fontSize: 18,
+                                                      color: Colors.black87,
+                                                    ),
+                                                  )
+                                              );
+                            }),
+                   )
           )
         ],
       ),

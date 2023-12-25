@@ -37,68 +37,69 @@ class _CreateTodoScreenState extends State<CreateTodoScreen> {
               padding: const EdgeInsets.symmetric(
                   horizontal: 20.0, vertical: 30),
               child:
-              Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'Enter todo name',
-                      ),
-                      validator: (text) {
-                        if (text == null || text.isEmpty) {
-                          return 'Can\'t be empty';
-                        }
-                        if (text.length < 4) {
-                          return 'Too short';
-                        }
-                        return null;
-                      },
-                      onChanged: (text) => setState(() => _name = text),
-                    ),
-                    const SizedBox(height: 20,),
-                    SizedBox(width: 200,
-                      child:
-                      BlocListener<CreateTodoBloc, CreateTodoState>(
-                          listener: (context, state) {
-                            // do stuff here based on BlocA's state
-                            if(state.status.isLoading) {
-                              const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
-                            else if(state.status.isError){
-                              TodoListErrorWidget(message: state.message);
+                      Form(
+                            key: _formKey,
+                            child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                        TextFormField(
+                                          decoration: const InputDecoration(
+                                            labelText: 'Enter todo name',
+                                          ),
+                                          validator: (text) {
+                                            if (text == null || text.isEmpty) {
+                                              return 'Can\'t be empty';
+                                            }
+                                            if (text.length < 4) {
+                                              return 'Too short';
+                                            }
+                                            return null;
+                                          },
+                                          onChanged: (text) => setState(() => _name = text),
+                                        ),
+                                        const SizedBox(height: 20,),
+                                        SizedBox(width: 200,
+                                            child:
+                                            BlocListener<CreateTodoBloc, CreateTodoState>(
+                                                listener: (context, state) {
+                                                  if(state.status.isError){
+                                                    print("create todo failed: ${state.message}");
+                                                  }
+                                                  else if(state.status.isSuccess){
+                                                    ScaffoldMessenger.of(context)
+                                                        .showSnackBar(const SnackBar(
+                                                      content: Text("Create new todo successfully.", style: TextStyle(fontSize: 18,
+                                                        color: Colors.white,),),
+                                                    ));
+                                                    Navigator.pop(context, true);//true for isCompleteUpdated bool argument to list screen
+                                                  }
 
-                            }
-                            else if(state.status.isSuccess){
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(const SnackBar(
-                                content: Text("Create new todo successfully.", style: TextStyle(fontSize: 18,
-                                  color: Colors.white,),),
-                              ));
-                              Navigator.pop(context, true);//true for isCompleteUpdated bool argument to list screen
-                            }
+                                                },
+                                                child:
+                                                    BlocBuilder<CreateTodoBloc, CreateTodoState>(
+                                                    builder: (context, state){
+                                                        return
+                                                           state.status.isLoading?
+                                                                const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(),))
+                                                                     :
+                                                                        ElevatedButton(
+                                                                            onPressed: _submit,
+                                                                            child: Text(
+                                                                              'Create',
+                                                                              style: Theme
+                                                                                  .of(context)
+                                                                                  .textTheme
+                                                                                  .bodyMedium,
+                                                                            ),
+                                                                          );
+                                                                        }),
 
-                          },
-                          child:
-                          ElevatedButton(
-                            onPressed: _submit,
-                            child: Text(
-                              'Create',
-                              style: Theme
-                                  .of(context)
-                                  .textTheme
-                                  .bodyMedium,
+                                            )
+                                        )
+                                  ],
                             ),
-                          ),
                       )
-                    )
-                    ],
-                ),
-              )
 
           )
 
