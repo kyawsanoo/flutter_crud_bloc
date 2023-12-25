@@ -230,47 +230,56 @@ class _TodoListScreenState extends State<TodoListScreen> {
                       },
                     ),
                     BlocListener<DeleteTodoBloc, DeleteTodoState>(
-                        listener: (context, state) {
-                          // do stuff here based on BlocA's state
-                          if(state.status.isLoading) {
-                            const Center(
-                              child: CircularProgressIndicator(),
-                            );
+                        listener: (context, state) async {
+                          if(state.status.isError){
+                            String errMessage = state.message!;
+                            if (kDebugMode) {
+                              print("Deleting todo Failed $errMessage");
+                            }
+                            Navigator.of(context).pop();
                           }
-                          else if(state.status.isError){
-                            TodoListErrorWidget(message: state.message);
-
-                          }
-                          else if(state.status.isSuccess){
+                          if(state.status.isSuccess){
                             ScaffoldMessenger.of(context)
                                 .showSnackBar(const SnackBar(
                               content: Text("Updated successfully.", style: TextStyle(fontSize: 18,
                                 color: Colors.white,),),
                             ));
-                            Navigator.pop(context, true);//true for isCompleteUpdated bool argument to list screen
+                            await Future.delayed(const Duration(seconds: 1)).then((value) =>
+                                Navigator.of(context).pop()
+                            ).then((_){
+
+                            });
                           }
 
                         },
                         child:
-                        TextButton(
-                        style: TextButton.styleFrom(
-                          textStyle: Theme
-                              .of(context)
-                              .textTheme
-                              .labelLarge,
-                        ),
-                        child: const Text('Ok'),
-                        onPressed: () async {
-                          if (kDebugMode) {
-                            print("argument todo: ${todo.toJson()}");
-                          }
-                          context.read<DeleteTodoBloc>().add(DeleteButtonClickEvent(todoId: todo.todoId!));
+                          BlocBuilder<TodoListBloc, TodoListState>(
+                          builder: (context, state){
+                                  return
+                                      state.status.isLoading?
+                                      const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(),)
+                                          :
+                                            TextButton(
+                                                    style: TextButton.styleFrom(
+                                                    textStyle: Theme
+                                                        .of(context)
+                                                        .textTheme
+                                                        .labelLarge,
+                                                    ),
+                                                    child: const Text('Ok'),
+                                                    onPressed: () async {
+                                                    if (kDebugMode) {
+                                                    print("argument todo: ${todo.toJson()}");
+                                                    }
+                                                    context.read<DeleteTodoBloc>().add(DeleteButtonClickEvent(todoId: todo.todoId!));
 
-                        }
-                    )),
+                                                    }
+
+                                                );
+                          }),
 
 
-                  ],
+                    )],
                 ));
 
           }));

@@ -30,7 +30,9 @@ class TodoService {
     return Uri.parse('$baseUrl/$url').replace(
       queryParameters: queryParameters,
     );*/
-
+    if (kDebugMode) {
+      print('api url: $baseUrl/$url');
+    }
     return Uri.parse('$baseUrl/$url');
   }
 
@@ -44,7 +46,7 @@ class TodoService {
               .fromJson(
               responseBody);
           if (kDebugMode) {
-            print("response: $response");
+            print("responseBody: $responseBody");
             print("TodoListApiResponse: ${todoListApiResponse.toJson()}");
           }
           return todoListApiResponse.data;
@@ -83,7 +85,7 @@ class TodoService {
       print('CreateTodo Api Request Body $body');
     }
     try {
-      var response = await http.post(getUrl(url: '/todos/add'), body: body, headers: header);
+      var response = await http.post(getUrl(url: 'todos/add'), body: body, headers: header);
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {
           final responseBody = json.decode(response.body);
@@ -91,7 +93,7 @@ class TodoService {
               .fromJson(
               responseBody);
           if (kDebugMode) {
-            print("response: $response");
+            print("responseBody: $responseBody");
             print("CreateTodoApiResponse: ${editTodo.toJson()}");
           }
           return editTodo;
@@ -125,7 +127,7 @@ class TodoService {
       print('UpdateTodo Api Request Body $body');
     }
     try {
-      var response = await http.put(getUrl(url: '/todos/$todoId'), body: body, headers: header);
+      var response = await http.put(getUrl(url: 'todos/$todoId'), body: body, headers: header);
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {
           final responseBody = json.decode(response.body);
@@ -133,7 +135,7 @@ class TodoService {
               .fromJson(
               responseBody);
           if (kDebugMode) {
-            print("response: $response");
+            print("responseBody: $responseBody");
             print("EditTodoApiResponse: ${editTodo.toJson()}");
           }
           return editTodo;
@@ -162,7 +164,7 @@ class TodoService {
     }
     dynamic header = {"Content-Type": "application/json"};
     try {
-      var response = await http.delete(getUrl(url: '/todos/$todoId'), headers: header);
+      var response = await http.delete(getUrl(url: 'todos/$todoId'), headers: header);
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {
           final responseBody = json.decode(response.body);
@@ -170,7 +172,7 @@ class TodoService {
               .fromJson(
               responseBody);
           if (kDebugMode) {
-            print("response: $response");
+            print("Delete Todo responseBody: $responseBody");
             print("DeleteTodoApiResponse: ${deleteTodo.toJson()}");
           }
           return deleteTodo;
