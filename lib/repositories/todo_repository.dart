@@ -11,8 +11,19 @@ class TodoRepository {
   final TodoService service;
 
   Future<dynamic> getTodos() async {
-    return service.getAllTodoList();
+    return service.callAllTodoList();
   }
 
+  Future<dynamic> createTodo(String todoName) async {
+    return service.callCreateTodo(todoName);
+  }
+
+  Future<dynamic> editTodo(int todoId, bool completed) async {
+    return service.callUpdateTodo(todoId, completed);
+  }
+
+  Future<dynamic> deleteTodo(int todoId) async {
+    return service.callDeleteTodo(todoId);
+  }
 
 }

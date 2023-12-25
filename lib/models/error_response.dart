@@ -1,6 +1,6 @@
-class TodoListResponseError implements Exception {
+class TodoResponseError implements Exception {
   final String errorMessage;
-  TodoListResponseError(this.errorMessage);
+  TodoResponseError(this.errorMessage);
 }
 
-class TodoListEmptyResponseError implements Exception {}
+class TodoEmptyResponseError implements Exception {}

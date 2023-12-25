@@ -1,10 +1,17 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app_bloc/blocs/todo_list_bloc.dart';
+import 'package:flutter_app_bloc/blocs/delete/delete_todo_event.dart';
+import 'package:flutter_app_bloc/blocs/delete/delete_todo_state.dart';
+import 'package:flutter_app_bloc/screens/create_todo_screen.dart';
+import 'package:flutter_app_bloc/screens/edit_todo_screen.dart';
 import 'package:flutter_app_bloc/widgets/error_widget.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../blocs/delete/delete_todo_bloc.dart';
+import '../blocs/list/todo_list_bloc.dart';
+import '../blocs/list/todo_list_event.dart';
+import '../blocs/list/todo_list_state.dart';
+import '../models/data.dart';
 
-import '../blocs/todo_list_state.dart';
 
 class TodoListScreen extends StatefulWidget {
   const TodoListScreen({super.key});
@@ -112,6 +119,21 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                                             ),
                                                           ),
                                                           onPressed: () async {
+                                                            await  Navigator.push(context, MaterialPageRoute(
+                                                              builder: (context) => const EditTodoScreen(),
+                                                              settings: RouteSettings(
+                                                                arguments: state.todoList![index],
+                                                              ),
+                                                            )
+                                                            ).then((isCompleteUpdated){
+                                                              if (kDebugMode) {
+                                                                print('isCompleteUpdated: $isCompleteUpdated');
+                                                              }
+                                                              if(isCompleteUpdated!=null && isCompleteUpdated){
+                                                                //refresh the page
+                                                                _pullRefresh();
+                                                              }
+                                                            });
 
                                                           },
                                                           child: const Text(
@@ -136,7 +158,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                                             ),
                                                           ),
                                                           onPressed: () {
-
+                                                            _dialogBuilder(context, state.todoList![index]);
                                                           },
                                                           child: const Text(
                                                             "Delete",
@@ -156,6 +178,18 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                 child: Text("Todo list is empty and create new"))),
                         floatingActionButton: FloatingActionButton(
                           onPressed: () async {
+                            await  Navigator.push(context, MaterialPageRoute(
+                              builder: (context) => const CreateTodoScreen(),
+                            )
+                            ).then((isCompleteCreated){
+                              if (kDebugMode) {
+                                print('isCompleteCreated: $isCompleteCreated');
+                              }
+                              if(isCompleteCreated!=null && isCompleteCreated){
+                                //refresh the page
+                                _pullRefresh();
+                              }
+                            });
 
                           },
                           child: const Icon(Icons.add),
@@ -165,6 +199,83 @@ class _TodoListScreenState extends State<TodoListScreen> {
   }
 
   Future<void> _pullRefresh() async {
-
+    if (kDebugMode) {
+      print('refreshing start');
+    }
+    context.read<TodoListBloc>().add(const FetchTodoList());
   }
+
+  Future<void> _dialogBuilder(BuildContext context, Data todo) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return
+          ScaffoldMessenger(child: Builder(builder: (context){
+            return Scaffold(
+                backgroundColor: Colors.transparent,
+                body: AlertDialog(
+                  title: const Text('Confirm to delete'),
+                  content: const Text(
+                      'Are you sure to delete?'
+
+                  ),
+                  actions: <Widget>[
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        textStyle: Theme.of(context).textTheme.labelLarge,
+                      ),
+                      child: const Text('Cancel'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    BlocListener<DeleteTodoBloc, DeleteTodoState>(
+                        listener: (context, state) {
+                          // do stuff here based on BlocA's state
+                          if(state.status.isLoading) {
+                            const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          else if(state.status.isError){
+                            TodoListErrorWidget(message: state.message);
+
+                          }
+                          else if(state.status.isSuccess){
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(const SnackBar(
+                              content: Text("Updated successfully.", style: TextStyle(fontSize: 18,
+                                color: Colors.white,),),
+                            ));
+                            Navigator.pop(context, true);//true for isCompleteUpdated bool argument to list screen
+                          }
+
+                        },
+                        child:
+                        TextButton(
+                        style: TextButton.styleFrom(
+                          textStyle: Theme
+                              .of(context)
+                              .textTheme
+                              .labelLarge,
+                        ),
+                        child: const Text('Ok'),
+                        onPressed: () async {
+                          if (kDebugMode) {
+                            print("argument todo: ${todo.toJson()}");
+                          }
+                          context.read<DeleteTodoBloc>().add(DeleteButtonClickEvent(todoId: todo.todoId!));
+
+                        }
+                    )),
+
+
+                  ],
+                ));
+
+          }));
+      },
+    );
+  }
+
 }
