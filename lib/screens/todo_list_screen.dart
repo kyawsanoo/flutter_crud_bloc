@@ -234,29 +234,29 @@ class _TodoListScreenState extends State<TodoListScreen> {
                           if(state.status.isError){
                             String errMessage = state.message!;
                             if (kDebugMode) {
-                              print("Deleting todo Failed $errMessage");
+                              print("Deleting Failed: $errMessage");
                             }
                             Navigator.of(context).pop();
                           }
                           if(state.status.isSuccess){
                             ScaffoldMessenger.of(context)
                                 .showSnackBar(const SnackBar(
-                              content: Text("Updated successfully.", style: TextStyle(fontSize: 18,
+                              content: Text("Delete todo successfully.", style: TextStyle(fontSize: 18,
                                 color: Colors.white,),),
                             ));
                             await Future.delayed(const Duration(seconds: 1)).then((value) =>
                                 Navigator.of(context).pop()
                             ).then((_){
-
+                                  _pullRefresh();
                             });
                           }
 
                         },
                         child:
-                          BlocBuilder<TodoListBloc, TodoListState>(
-                          builder: (context, state){
+                          BlocBuilder<DeleteTodoBloc, DeleteTodoState>(
+                          builder: (context, deleteState){
                                   return
-                                      state.status.isLoading?
+                                      deleteState.status.isLoading?
                                       const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(),)
                                           :
                                             TextButton(
